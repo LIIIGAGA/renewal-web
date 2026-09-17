@@ -1,0 +1,5 @@
+project_id = "renewal"
+
+[functions.send-reminders]
+# This scheduled endpoint uses its own random shared secret, not a browser JWT.
+verify_jwt = false

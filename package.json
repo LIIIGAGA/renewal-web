@@ -1,0 +1,8 @@
+{
+  "name": "renewal-subscription-manager",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": { "dev": "next dev --hostname 127.0.0.1", "build": "next build", "start": "next start --hostname 127.0.0.1", "typecheck": "tsc --noEmit", "typecheck:edge": "tsc -p supabase/functions/tsconfig.json", "test": "tsx --test tests/*.test.ts", "test:e2e": "playwright test" },
+  "dependencies": { "next": "^16.0.0", "react": "^19.0.0", "react-dom": "^19.0.0", "@supabase/supabase-js": "^2.57.0", "date-fns": "^4.1.0", "date-fns-tz": "^3.2.0", "lucide-react": "^0.468.0", "papaparse": "^5.5.0", "zod": "^4.0.0" },
+  "devDependencies": { "typescript": "^5.9.0", "@types/react": "^19.0.0", "@types/react-dom": "^19.0.0", "@types/node": "^22.0.0", "@types/papaparse": "^5.3.0", "tsx": "^4.20.0", "@playwright/test": "^1.55.0", "@electric-sql/pglite": "^0.3.0" }
+}

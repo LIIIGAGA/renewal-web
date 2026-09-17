@@ -1,0 +1,24 @@
+import { test, expect } from '@playwright/test';
+test('categories filter, prefill new subscriptions and persist edits on desktop/mobile',async({page})=>{
+  await page.goto('/');
+  await page.getByRole('button',{name:'音乐',exact:true}).click();
+  await expect(page.getByRole('button',{name:'Spotify Premium Individual'})).toBeVisible();
+  await expect(page.getByRole('button',{name:'ChatGPT Plus'})).toHaveCount(0);
+  await page.getByRole('button',{name:'视频',exact:true}).click();
+  await expect(page.getByRole('heading',{name:'这个分类暂无订阅'})).toBeVisible();
+  await page.getByRole('button',{name:'添加订阅',exact:true}).first().click();
+  await expect(page.getByLabel('分类',{exact:true})).toHaveValue('视频');
+  await page.getByLabel('服务名称',{exact:true}).fill('Category Service');
+  await page.getByRole('button',{name:'保存订阅'}).click();await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.reload();
+  const row=page.locator('.subscription-row').filter({hasText:'Category Service'});
+  await expect(row.getByText('视频',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Category Service 未填写方案'}).click();
+  await page.getByRole('button',{name:'编辑订阅',exact:true}).click();
+  await page.getByLabel('分类',{exact:true}).selectOption('AI');await page.getByRole('button',{name:'保存订阅'}).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.getByRole('button',{name:'视频',exact:true}).click();await expect(page.getByRole('heading',{name:'这个分类暂无订阅'})).toBeVisible();
+  await page.getByRole('button',{name:'AI',exact:true}).click();await page.getByRole('textbox',{name:'搜索订阅'}).fill('Category Service');
+  await expect(page.locator('.subscription-row')).toHaveCount(1);await expect(row.getByText('AI',{exact:true})).toBeVisible();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);
+});

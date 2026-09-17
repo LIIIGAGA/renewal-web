@@ -1,0 +1,6 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": { "baseUrl": "../..", "paths": { "npm:@supabase/supabase-js@2": ["node_modules/@supabase/supabase-js"] }, "incremental": false },
+  "include": ["send-reminders/index.ts", "deno.d.ts"],
+  "exclude": []
+}

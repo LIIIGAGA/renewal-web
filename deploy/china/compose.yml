@@ -1,0 +1,60 @@
+name: renewal
+services:
+  web:
+    image: renewal-web:local
+    build:
+      context: ../..
+      target: web
+      args:
+        NODE_IMAGE: ${NODE_IMAGE:-node:22-bookworm-slim}
+        NPM_REGISTRY: ${NPM_REGISTRY:-https://registry.npmjs.org}
+        NEXT_PUBLIC_SUPABASE_URL: https://${API_DOMAIN:?Set API_DOMAIN}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${ANON_KEY:?Use self-hosted ANON_KEY}
+        NEXT_PUBLIC_ICP_NUMBER: ${ICP_NUMBER:-}
+    restart: unless-stopped
+    ports: ["127.0.0.1:3000:3000"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging: {driver: json-file, options: {max-size: 10m, max-file: "3"}}
+  worker:
+    image: renewal-worker:local
+    build:
+      context: ../..
+      target: worker
+      args:
+        NODE_IMAGE: ${NODE_IMAGE:-node:22-bookworm-slim}
+        NPM_REGISTRY: ${NPM_REGISTRY:-https://registry.npmjs.org}
+    restart: unless-stopped
+    env_file: .env.worker
+    networks: [supabase]
+    healthcheck:
+      test: ["CMD", "node", "-e", "const f=require('fs');try{if(Date.now()-Number(f.readFileSync('/tmp/renewal-worker-health','utf8'))>1200000)process.exit(1)}catch{process.exit(1)}"]
+      interval: 60s
+      timeout: 5s
+      start_period: 90s
+      retries: 3
+    logging: {driver: json-file, options: {max-size: 10m, max-file: "3"}}
+  proxy:
+    image: ${CADDY_IMAGE:-caddy:2.10.2-alpine}
+    restart: unless-stopped
+    # Linux server only; loopback APIs are accessible, backend ports remain closed publicly.
+    network_mode: host
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?Set APP_DOMAIN}
+      API_DOMAIN: ${API_DOMAIN:?Set API_DOMAIN}
+      TLS_EMAIL: ${TLS_EMAIL:?Set TLS_EMAIL}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    logging: {driver: json-file, options: {max-size: 10m, max-file: "3"}}
+networks:
+  supabase:
+    external: true
+    name: supabase_default
+volumes:
+  caddy_data:
+  caddy_config:

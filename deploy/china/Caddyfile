@@ -1,0 +1,24 @@
+{
+  email {$TLS_EMAIL}
+}
+{$APP_DOMAIN} {
+  request_body {
+    max_size 2MB
+  }
+  reverse_proxy 127.0.0.1:3000
+}
+{$API_DOMAIN} {
+  # Allow only client Auth, PostgREST and Realtime. Studio, admin Auth and Edge functions stay private.
+  @admin path /auth/v1/admin /auth/v1/admin/*
+  respond @admin 404
+  @client path /auth/v1/* /rest/v1/* /realtime/v1/*
+  handle @client {
+    request_body {
+      max_size 2MB
+    }
+    reverse_proxy 127.0.0.1:8000
+  }
+  handle {
+    respond 404
+  }
+}
